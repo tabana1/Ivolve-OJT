@@ -1,0 +1,8 @@
+---
+- hosts: ubuntu_vm
+  become: yes
+  roles:
+    - docker
+    - jenkins
+    - openshift-cli
+
