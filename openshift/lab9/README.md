@@ -179,4 +179,4 @@ exit
 By following these steps and understanding the differences between PV, PVC, and StorageClass, you can effectively manage persistent storage in an OpenShift cluster.
 ```
 
-Save this content in a file named `README.md` in the specified directory of your repository. This README provides clear instructions and a comprehensive comparison of PV, PVC, and StorageClass, tailored for your OpenShift lab.
+
