@@ -1,75 +1,152 @@
+# Lab 15: DaemonSets & Taint and Toleration
 
-## iVolve-OJT/openshift/lab15
+## Overview
+This lab covers the concepts of DaemonSets, Taints, and Tolerations in OpenShift. We will create a DaemonSet with an Nginx container, simulate a tainted node using Minikube, and observe the behavior of pods with different tolerations. Additionally, we will compare Taints, Tolerations, and Node Affinity.
 
-**What is a DaemonSet?**
+## Objectives
+1. Understand what a DaemonSet is and its use cases.
+2. Create a DaemonSet YAML file with an Nginx container and verify the number of pods.
+3. Taint a Minikube node with a key-value pair `color=red`.
+4. Create a pod with a toleration `color=blue` and observe its status.
+5. Modify the pod's toleration to `color=red` and observe the changes.
+6. Compare Taints, Tolerations, and Node Affinity.
 
-In Kubernetes, a DaemonSet ensures that a specified Pod runs on all nodes (or a specific subset of nodes) in your cluster. It guarantees at least one instance of the Pod running on each eligible node. This makes it ideal for deploying background services that need to be present on every node.
+## Prerequisites
+- OpenShift CLI (`oc`)
+- Minikube
+- Basic knowledge of Kubernetes and OpenShift
 
-**Key Characteristics:**
+## Instructions
 
-* **Kubernetes Object:** Manages Pods across designated nodes.
-* **Scheduling:** Creates and schedules identical Pods across nodes.
-* **High Availability:** Ensures background services remain available.
-* **Self-Healing:** Automatically restarts failed Pods.
+### Step 1: Create a DaemonSet with Nginx
 
-**Use Cases:**
+1. **Create a DaemonSet YAML file** (`nginx-daemonset.yaml`):
 
-* **Background Services:**
-    * Logging agents (collect and centralize application logs)
-    * Monitoring agents (track node and application health)
-    * Node-local storage (distributed storage with Ceph)
-    * Security agents (scan nodes for vulnerabilities)
-* **Maintaining Cluster State:** Manages configurations or resources consistent across all nodes (e.g., network settings)
+    ```yaml
+    apiVersion: apps/v1
+    kind: DaemonSet
+    metadata:
+      name: nginx-daemonset
+    spec:
+      selector:
+        matchLabels:
+          name: nginx
+      template:
+        metadata:
+          labels:
+            name: nginx
+        spec:
+          containers:
+          - name: nginx
+            image: nginx:latest
+    ```
 
-**Benefits:**
+2. **Apply the DaemonSet in OpenShift**:
 
-* **High Availability:** Guarantees service continuity with Pods running on each node.
-* **Scalability:** Automatically scales as you add or remove nodes.
-* **Self-Healing:** Ensures service continuity by restarting failed Pods.
-* **Simplified Management:** Manages Pod lifecycles across multiple nodes.
+    ```sh
+    oc apply -f nginx-daemonset.yaml
+    ```
 
-**In essence, DaemonSets provide a robust mechanism for deploying and managing essential background services that require consistent operation on all nodes in your Kubernetes cluster.**
+3. **Verify the number of pods created**:
 
-## Node Affinity vs. Taints & Tolerations
+    ```sh
+    oc get pods -l name=nginx
+    ```
+    ![DaemonSet Pods](images/daemonset_pods.png)
 
-**Node Affinity**
+### Step 2: Taint the Minikube Node
 
-* **Purpose:** Attraction - Defines preferences for pods to be scheduled on specific nodes based on node labels (e.g., targeting nodes with an "NVIDIA GPU" label for pods requiring a GPU).
-* **Approach:** Labels and operators on pods and nodes.
-* **Granularity:** More granular - Targets specific node attributes.
+1. **Taint the Minikube node** with `color=red`:
 
-**Taints & Tolerations**
+    ```sh
+    kubectl taint nodes minikube color=red:NoSchedule
+    ```
 
-* **Purpose:** Repulsion & Permission - Excludes unsuitable pods from nodes while allowing certain pods to be scheduled on tainted nodes.
-    * **Taints:** Attributes applied to nodes to make them undesirable for certain pods.
-    * **Tolerations:** Properties of pods that allow them to tolerate specific taints (e.g., a pod tolerating "maintenance" taint can be scheduled on a node undergoing maintenance).
-* **Approach:** Taints on nodes, tolerations on pods.
-* **Granularity:** Less granular - Broader exclusion based on taints.
+2. **Verify the taint**:
 
-**When to Use:**
+    ```sh
+    kubectl describe node minikube | grep Taints
+    ```
+    ![Taint Node](images/taint_node.png)
 
-* **Node Affinity:** When precise node selection based on labels is necessary for your application's functionality (e.g., hardware, storage, OS version).
-* **Taints & Tolerations:** When you want to:
-    * Prevent certain pods from being scheduled on specific nodes (e.g., node maintenance, resource limitations).
-    * Enable scheduling pods on nodes in a temporary state (like maintenance) with specific tolerations.
+### Step 3: Create a Pod with Toleration
 
-**Combining Strategies:**
+1. **Create a Pod YAML file** (`pod-blue-toleration.yaml`) with toleration `color=blue`:
 
-You can combine both approaches for more comprehensive control:
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: nginx-pod
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+      tolerations:
+      - key: "color"
+        operator: "Equal"
+        value: "blue"
+        effect: "NoSchedule"
+    ```
 
-* Use node affinity to attract pods to desired nodes with specific labels.
-* Use taints and tolerations to further ensure only compatible pods are scheduled on those nodes, even if they have the desired labels.
+2. **Apply the Pod YAML file**:
 
-**Choosing the Right Approach:**
+    ```sh
+    kubectl apply -f pod-blue-toleration.yaml
+    ```
 
-* **Node Affinity:** When precise node selection based on labels is crucial for your application.
-* **Taints & Tolerations:** For dynamic exclusion or restricting access to specific nodes based on their temporary state.
+3. **Observe the Pod's status**:
 
-I've made the following improvements for better readability and clarity:
+    ```sh
+    kubectl get pod nginx-pod
+    ```
+    ![Pod Blue Toleration](images/pod_blue_toleration.png)
 
-* **Headings and Subheadings:** Used clear and concise headings to structure the content.
-* **Bullet Points:** Used bullet points to highlight key characteristics and benefits.
-* **Bold Text:** Highlighted important terms for emphasis.
-* **Examples:** Added an example for Node Affinity to illustrate its usage.
-* **Conciseness:** Removed unnecessary repetitions while maintaining clarity.
-* **Overall Formatting:** Improved formatting for better readability.
+### Step 4: Modify the Pod Toleration to `color=red`
+
+1. **Update the Pod YAML file** (`pod-red-toleration.yaml`) with toleration `color=red`:
+
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: nginx-pod
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+      tolerations:
+      - key: "color"
+        operator: "Equal"
+        value: "red"
+        effect: "NoSchedule"
+    ```
+
+2. **Apply the updated Pod YAML file**:
+
+    ```sh
+    kubectl apply -f pod-red-toleration.yaml
+    ```
+
+3. **Observe the Pod's status**:
+
+    ```sh
+    kubectl get pod nginx-pod
+    ```
+    ![Pod Red Toleration](images/pod_red_toleration.png)
+
+## Comparison: Taint & Toleration vs. Node Affinity
+
+- **Taint & Toleration**:
+  - **Taint**: Applied to nodes, it repels pods that do not tolerate the taint.
+  - **Toleration**: Applied to pods, it allows them to schedule onto nodes with matching taints.
+  - **Use Case**: Prevent specific pods from scheduling on certain nodes.
+
+- **Node Affinity**:
+  - **Node Affinity**: Constraints that limit which nodes a pod can be scheduled on based on node labels.
+  - **Use Case**: Ensure pods are scheduled on nodes with specific attributes (e.g., hardware specifications).
+
+## Conclusion
+In this lab, we demonstrated the creation and verification of a DaemonSet, how to taint a node, and how to use tolerations to control pod scheduling. We also compared the concepts of Taints, Tolerations, and Node Affinity to better understand their use cases in managing cluster workloads.
+
+For more information, refer to the [OpenShift Documentation](https://docs.openshift.com).
