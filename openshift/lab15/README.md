@@ -1,4 +1,3 @@
-Here's the beautified version of your README.md file:
 
 ## iVolve-OJT/openshift/lab15
 
