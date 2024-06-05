@@ -1,0 +1,33 @@
+@Library('your-shared-library') _
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    def dockerImage = dockerBuildAndPush()
+                }
+            }
+        }
+
+        stage('Deploy to OpenShift') {
+            steps {
+                script {
+                    def dockerImage = sh(returnStdout: true, script: 'echo $DOCKER_IMAGE_TAG').trim()
+                    openshiftDeploy(dockerImage)
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}
