@@ -71,6 +71,13 @@ Find various Linux scripts in the `linux` directory for system administration ta
 
 Navigate to the `terraform` directory and use Terraform configurations to manage infrastructure as code.
 
+### OpenShift
+
+Navigate to the `openshift` directory for scripts and configurations to manage OpenShift resources.
+
+### Jenkins
+Navigate to the `jenkins`  directory for CI/CD pipeline configurations and scripts.
+
 ## Contributing
 
 We welcome contributions. Please follow these steps:
