@@ -15,8 +15,8 @@ The repository is structured as follows:
 - **Ansible**: Playbooks and configurations for automation using Ansible.
 - **Linux**: Various Linux scripts and configurations.
 - **Terraform**: Infrastructure as Code (IaC) configurations using Terraform.
-- **Jenkins**: Continous Integration (CI) & Continous Delviry (CD)
-
+- **Jenkins**: Continous Integration (CI) & Continous Delivery (CD)
+- **OpenShift**: Orchestration layer that is a Kubernetes-based platform for automating application deployments
 ## Getting Started
 
 To get started with this repository, clone it to your local machine using:
