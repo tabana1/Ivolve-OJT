@@ -1,70 +1,66 @@
 @Library('java-shared-library') _
-pipeline {
 
-    //agent { label 'slave1' }
-    // agent any 
+pipeline {
+    agent { 'ec2-slave'}
 
     environment {
-        dockerHubCredentialsID	    = 'DockerHub'  		    			// DockerHub credentials ID.
-        imageName   		    = 'tabana1/java-app'     			// DockerHub repo/image name.
-        openshiftcredintialsID  = 'openshift'
-        OPENSHIFT_PROJECT = 'mohamedtabana'
+        dockerHubCredentialsID = 'docker'
+        imageName = 'tabana1/static-website'
+        OPENSHIFT_SERVER = 'https://api.ocp-training.ivolve-test.com:6443'
+        GIT_REPO = 'https://github.com/IbrahimAdell/Lab'
+        OPENSHIFT_PROJECT = 'my-devops-tools'
+        OPENSHIFT_CREDENTIALS_ID = 'open-shift-service'
     }
-    
 
+     stages {
+    //     stage('Clone Repository') {
+    //         steps {
+    //             git url: "${env.GIT_REPO}"
+    //         }
+    //     }
 
-    stages {       
+        // stage('Test') {
+        //     steps {
+        //         script {
+        //             echo "Running Unit Test..."
+        //             // Call a function from java-shared-library/vars
+        //             runUnitTests()
+        //         }
+        //     }
+        // }
 
-        stage('Test') {
-            steps {
-                script {
-                    dir('Jenkins'){
-                        dir('my-app'){   
-                	    echo "Running Unit Test..."
-			            // sh 'chmod 744 ./gradlew'
-			            // sh './gradlew clean test'
-                        }
-                    }
-        	    }
-    	    }
-	}
-	
-       
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                	// Navigate to the directory contains Dockerfile
-                 	dir('Jenkins') {
-                        dir('app-master') {
-                 		    buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
-                    }
-                }
-            }
-	    }
-    }       
-        
-	stage('Deploy on OpenShift cluster') {
-            steps {
-                script {
-        		// Navigate to the directory contains Deployment and Service YAML files
-                    dir('Jenkins'){
-                        dir('openshift'){
-                            deployOnOpenShift("${openshiftcredintialsID}" , "${imageName}")
-                        }
-                    }
-
+                    // Call another function from java-shared-library/vars
+                    dir('my-app'){
+                    dockerBuildAndPush(
+                       dockerHubCredentialsID, imageName) }
                 }
             }
         }
 
+        stage('Deploy to OpenShift') {
+            steps {
+                script {
+                    // Call another function from java-shared-library/vars
+                    dir('openshift'){
+                    openshiftDeploy(OPENSHIFT_CREDENTIALS_ID, imageName)
+                    }
+                }
+            }
+        }
     }
 
     post {
+        always {
+            echo 'Pipeline execution completed'
+        }
         success {
-            echo "${JOB_NAME}-${BUILD_NUMBER} pipeline succeeded"
+            echo 'Pipeline executed successfully'
         }
         failure {
-            echo "${JOB_NAME}-${BUILD_NUMBER} pipeline failed"
+            echo 'Pipeline execution failed'
         }
     }
 }
