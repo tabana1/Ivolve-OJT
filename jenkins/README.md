@@ -24,7 +24,7 @@ The `jenkins` directory in this repository houses scripts and configurations spe
 ---
 
 ## Scripts
-
+Shared Library Repository: https://github.com/tabana1/java-shared-library
 ### 1. `dockerBuildandpush.groovy`
 
 This script automates the building static website adnpushing the image to docker hub using Jenkins pipelines. It includes steps for building Docker images, pushing them to a registry, and deploying them to OpenShift.
