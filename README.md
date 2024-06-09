@@ -15,6 +15,7 @@ The repository is structured as follows:
 - **Ansible**: Playbooks and configurations for automation using Ansible.
 - **Linux**: Various Linux scripts and configurations.
 - **Terraform**: Infrastructure as Code (IaC) configurations using Terraform.
+- **Jenkins**: Continous Integration (CI) & Continous Delviry (CD)
 
 ## Getting Started
 
