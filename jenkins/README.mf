@@ -51,16 +51,19 @@ To utilize the scripts and configurations in this directory:
 1. **Set Up Jenkins:**
 
    - Ensure Jenkins is installed and configured with necessary plugins (such as OpenShift and Docker plugins).
+2. **Set Up Java-shared-library:**
 
-2. **Create Jenkins Jobs:**
+   - Set up all the required functions and scripts you want to automate with Jenkins.
+
+3. **Create Jenkins Jobs:**
 
    - Import or create Jenkins jobs using the provided `Jenkinsfile` or individual scripts (`*.groovy`, `*.sh`).
 
-3. **Configure Credentials:**
+4. **Configure Credentials:**
 
    - Configure Jenkins credentials for Docker registries, OpenShift authentication, or any other required integrations.
 
-4. **Run Jenkins Jobs:**
+5. **Run Jenkins Jobs:**
 
    - Trigger Jenkins jobs manually or automate them based on code commits or schedule.
 
